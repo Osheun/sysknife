@@ -12,6 +12,8 @@ Releases before `0.2.5` predate the public launch; their notes live in the
 
 ## [Unreleased]
 
+## [0.21.0] — 2026-09-23
+
 ### Security
 
 - **`useradd`, `usermod` and the eight unit verbs run through the validating
@@ -44,6 +46,15 @@ Releases before `0.2.5` predate the public launch; their notes live in the
   helper's copy drifted in GHSA-f8vp-j3jh-7wjx. Both directions are
   mutation-proved: restoring `/usr/sbin/useradd --create-home *` turns the new
   test red, naming the grant and the escape.
+
+  **Upgrading is not crate-only.** The daemon now builds
+  `sudo /usr/lib/sysknife/action-steps …` for these actions, and the grant that
+  authorises it lives in the packaged sudoers fragment, so a host that takes the
+  new binary while keeping the old `/etc/sudoers.d` fragment and the old helper
+  gets "a password is required" on every user and service action. Install the
+  package, or re-run `make install`, rather than replacing the binary alone.
+  That coupling is why this is a middle-digit release: a call that used to
+  succeed now refuses until both sides move.
 
 ## [0.20.1] — 2026-09-23
 
