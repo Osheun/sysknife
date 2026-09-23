@@ -12,6 +12,24 @@ Releases before `0.2.5` predate the public launch; their notes live in the
 
 ## [Unreleased]
 
+## [0.22.0] — 2026-09-23
+
+### Added
+
+- **The syslog forwarder's IANA Private Enterprise Number is configurable.**
+  ([#445](https://github.com/lacs-project/sysknife/pull/445))
+  `[audit.forward.syslog] enterprise_number` sets the SD-ID the RFC 5424
+  structured data carries (`sysknife@<pen>`), instead of the hardcoded value.
+  It defaults to 32473, RFC 5612's reserved documentation and test PEN, so a
+  site that has not registered one is not squatting somebody else's, and `0` is
+  refused because the IANA registry starts at 1 (closes
+  [#218](https://github.com/lacs-project/sysknife/issues/218)). Thanks to
+  [@atanishka308](https://github.com/atanishka308).
+
+  `SyslogForwardSection` gains a public field, which Cargo counts as a breaking
+  change for any caller constructing it literally, so this moves the middle
+  digit while the leading zero stands.
+
 ### Fixed
 
 - **The story-evidence writer refuses a missing `EV_CASSETTE_SHA` at preflight
@@ -24,6 +42,16 @@ Releases before `0.2.5` predate the public launch; their notes live in the
   the Python AST, so the declaration cannot drift from the code again (closes
   [#448](https://github.com/lacs-project/sysknife/issues/448)). Thanks to
   [@mikevillari](https://github.com/mikevillari).
+- **A local action reference outside `.github/actions` is refused rather than
+  skipped.** ([#510](https://github.com/lacs-project/sysknife/pull/510)) GitHub
+  accepts `uses: ./any/directory`, both pin checks returned early on any `./`
+  reference, and `discover()` only walks `.github/actions`, so an unpinned
+  `uses: attacker/exfil@main` inside `ci/setup/action.yml` passed the rehearsal
+  contract, the pin-comment checker, the Node EOL check and yamllint. A shared
+  `check_local()` now normalises the reference and requires it to land in
+  `.github/actions` or on a top-level reusable workflow, and the symlink guard
+  in `discover()` has the test it never had (closes
+  [#507](https://github.com/lacs-project/sysknife/issues/507)).
 - **`scripts/check_evidence_claims.py` and `tests/release/public-claims.test.sh`
   are executable again.** Both lost the bit in #487's merge. CI calls them
   through an interpreter so nothing went red, and `CONTRIBUTING.md` tells
